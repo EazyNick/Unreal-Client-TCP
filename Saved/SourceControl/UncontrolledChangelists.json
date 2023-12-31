@@ -1,0 +1,13 @@
+{
+	"version": 1,
+	"changelists": [
+		{
+			"guid": "00000000000000000000000000000000",
+			"description": "Default Uncontrolled Changelist",
+			"files": [
+				"C:/Unreal/TestProject1/Content/BP/BP_MyMyGameNetworkManager.uasset",
+				"C:/Unreal/TestProject1/Content/__ExternalActors__/TopDown/Maps/TopDownMap/B/J1/FO81VLGIXUIKV88R55R1IM.uasset"
+			]
+		}
+	]
+}
