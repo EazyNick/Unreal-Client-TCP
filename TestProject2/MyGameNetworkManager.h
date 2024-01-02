@@ -31,6 +31,8 @@ public:
     int32 ServerPort;
 
     // Destructor(소멸자)
+    // virtual - 추후 파생 클래스가 AMyGameNetworkManager를 상속받고, 소멸자를 중복시키지 않기 위해 씀
+    // 생성자는 시작 시 정해지는 것이여야 하므로 virtual를 쓰면 안됨.
     virtual ~AMyGameNetworkManager();
 
     // Function to connect to the server
