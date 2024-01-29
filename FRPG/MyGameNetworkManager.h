@@ -14,6 +14,9 @@ public:
     // Constructor
     AMyGameNetworkManager();
 
+    void SetServerIP(const FString& NewServerIP) { ServerIP = NewServerIP; }
+    void SetServerPort(int32 NewServerPort) { ServerPort = NewServerPort; }
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")
     FString ServerIP;
 
@@ -43,7 +46,7 @@ public:
     void UpdateCharacterState();
 
     UFUNCTION(BlueprintCallable, Category = "Network")
-    bool ReceiveData(FString& OutReceivedData);
+    FString ReceiveData(FString& OutReceivedData);
 
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;

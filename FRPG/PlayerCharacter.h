@@ -12,6 +12,7 @@ class FRPG_API APlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+
 	// 위치 정보를 블루프린트에서 접근 가능하게 만듭니다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	FVector CurrentLocation;
@@ -27,14 +28,17 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
+	UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
+	void UpdateCharacterState(AMyGameNetworkManager* MyCharacterNetworkManager);
+
 protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//// 클라이언트의 현재 상태(위치, 회전, 속도)를 얻는 함수
-	//UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
-	//FString GetPlayerMove() const;
+	// 클라이언트의 현재 상태(위치, 회전, 속도)를 얻는 함수
+	UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
+	FString GetPlayerMove() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
 	FString GetPlayerID() const;

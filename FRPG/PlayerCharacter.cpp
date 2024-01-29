@@ -12,6 +12,9 @@
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerState.h"
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "MyGameNetworkManager.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -34,6 +37,23 @@ APlayerCharacter::APlayerCharacter()
 	
 }
 
+//void SomeFunction()
+//{
+//	AMyGameNetworkManager* MyNetworkManager = nullptr;
+//
+//	for (TActorIterator<AMyGameNetworkManager> It(GetWorld()); It; ++It)
+//	{
+//		MyNetworkManager = *It;
+//		break; // 첫 번째 인스턴스를 찾으면 반복을 종료합니다.
+//	}
+//
+//	if (MyNetworkManager)
+//	{
+//		// 이제 UpdateCharacterState() 함수를 호출할 수 있습니다.
+//		MyNetworkManager->UpdateCharacterState();
+//	}
+//}
+
 FString APlayerCharacter::GetPlayerID() const
 {
 
@@ -54,27 +74,60 @@ FString APlayerCharacter::GetPlayerID() const
 
 }
 
-//// 캐릭터 움직임 받아오기
-//FString APlayerCharacter::GetPlayerMove() const
-//{
-//
-//	FVector OutLocation = GetActorLocation();  // 현재 위치 가져오기
-//	FRotator OutRotation = GetActorRotation(); // 현재 회전 가져오기	
-//	FVector OutVelocity = GetVelocity();       // 현재 속도 가져오기
-//
-//	FString PlayerStateString = FString::Printf(TEXT("Location: %s, Rotation: %s, Velocity: %s"),
-//		*OutLocation.ToString(),
-//		*OutRotation.ToString(),
-//		*OutVelocity.ToString());
-//	UE_LOG(LogTemp, Log, TEXT("%s"), *PlayerStateString);
-//
-//	return PlayerStateString;
-//}
+// 캐릭터 움직임 받아오기
+FString APlayerCharacter::GetPlayerMove() const
+{
+
+	FVector OutLocation = GetActorLocation();  // 현재 위치 가져오기
+	FRotator OutRotation = GetActorRotation(); // 현재 회전 가져오기	
+	FVector OutVelocity = GetVelocity();       // 현재 속도 가져오기
+
+	FString PlayerStateString = FString::Printf(TEXT("Location: %s, Rotation: %s, Velocity: %s"),
+		*OutLocation.ToString(),
+		*OutRotation.ToString(),
+		*OutVelocity.ToString());
+	UE_LOG(LogTemp, Log, TEXT("%s"), *PlayerStateString);
+
+	return PlayerStateString;
+}
+
+void APlayerCharacter::UpdateCharacterState(AMyGameNetworkManager* MyCharacterNetworkManager)
+{
+
+	APlayerCharacter* MyCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+
+	if (MyCharacter) // MyCharacter는 캐릭터에 대한 참조입니다.
+	{
+		FVector Location = MyCharacter->GetActorLocation();
+		FRotator Rotation = MyCharacter->GetActorRotation();
+		FVector Velocity = MyCharacter->GetCharacterMovement()->Velocity;
+
+		// 이제 위치, 회전, 속도 값을 전송하는 로직을 구현하세요.
+		MyCharacterNetworkManager->SendData_Movement(Location, Rotation, Velocity);
+	}
+}
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	// AMyGameNetworkManager 인스턴스를 생성합니다.
+	AMyGameNetworkManager* MyCharacterNetworkManager = NewObject<AMyGameNetworkManager>(this, AMyGameNetworkManager::StaticClass());
+
+	if (MyCharacterNetworkManager)
+	{
+		// 서버 IP와 포트를 설정합니다.
+		MyCharacterNetworkManager->SetServerIP(TEXT("127.0.0.1")); // 예시 IP
+		MyCharacterNetworkManager->SetServerPort(12332); // 예시 포트
+
+		// 서버에 연결을 시도합니다.
+		if (MyCharacterNetworkManager->ConnectToServer())
+		{
+			// 연결 성공
+			//GetPlayerMove();
+			UpdateCharacterState(MyCharacterNetworkManager);
+		}
+	}
 	GetPlayerID();
 }
 
