@@ -2,6 +2,7 @@
 
 
 #include "MyGameNetworkManager.h"
+#include "PlayerCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SocketSubsystem.h"
 #include "Interfaces/IPv4/IPv4Address.h"
@@ -20,6 +21,7 @@ AMyGameNetworkManager::AMyGameNetworkManager()
     //}
 }
 
+
 AMyGameNetworkManager::~AMyGameNetworkManager()
 {
     CloseConnection();
@@ -27,6 +29,32 @@ AMyGameNetworkManager::~AMyGameNetworkManager()
     //{
     //    GetWorldTimerManager().ClearTimer(PlayerMoveUpdateHandle);
     //}
+}
+
+AMyGameNetworkManager* AMyGameNetworkManager::GetInstance(UObject* WorldContextObject)
+{
+    if (!Instance)
+    {
+        Instance = NewObject<AMyGameNetworkManager>(WorldContextObject, AMyGameNetworkManager::StaticClass());
+        Instance->RemoveFromRoot(); // Prevent garbage collection
+        // 240130 - 이거를 AddToRoot()로 하면 크래쉬남. 가비지 컬렉션 설정 해야됨!!
+    }
+    return Instance;
+}
+
+void AMyGameNetworkManager::Shutdown()
+{
+    if (Instance)
+    {
+        // Perform network disconnection and cleanup here
+        Instance->CloseConnection();
+
+        // If Instance is a UObject, do not delete it; let Unreal handle it.
+        // If Instance is not a UObject and was created with new, then delete it here.
+        // delete Instance; // Uncomment this only if Instance is not a UObject.
+
+        Instance = nullptr;
+    }
 }
 
 bool AMyGameNetworkManager::ConnectToServer()
@@ -77,6 +105,26 @@ void AMyGameNetworkManager::SendData_Movement(FVector CurrentLocation1, FRotator
     int32 BytesSent = 0;
     ClientSocket->Send((uint8*)Convert.Get(), Convert.Length(), BytesSent);
 }
+
+//void AMyGameNetworkManager::SendData_Movement(FCharacterState State)
+//{
+//    if (!ClientSocket) return;
+//
+//    UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation: %s, Velocity: %s"),
+//        *State.Location.ToString(),
+//        *State.Rotation.ToString(),
+//        *State.Velocity.ToString());
+//
+//    FString PlayerStateString = FString::Printf(TEXT("Location: %s, Rotation: %s, Velocity: %s"),
+//        *State.Location.ToString(),
+//        *State.Rotation.ToString(),
+//        *State.Velocity.ToString());
+//
+//    // 문자열을 UTF-8로 인코딩
+//    FTCHARToUTF8 Convert(PlayerStateString);
+//    int32 BytesSent = 0;
+//    ClientSocket->Send((uint8*)Convert.Get(), Convert.Length(), BytesSent);
+//}
 
 //void AMyGameNetworkManager::SendData_Movement()
 //{
@@ -177,12 +225,12 @@ void AMyGameNetworkManager::BeginPlay()
 {
     Super::BeginPlay();
 
-    FTimerHandle CharacterUpdateTimer;
+    /*FTimerHandle CharacterUpdateTimer;
     GetWorld()->GetTimerManager().SetTimer(CharacterUpdateTimer, this, &AMyGameNetworkManager::UpdateCharacterState, 0.1f, true);
 
-    APlayerCharacter* MyCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
-    if (MyCharacter)
-    {
-        // 캐릭터 참조가 성공적으로 얻어졌습니다.
-    }
+    APlayerCharacter* MyCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));*/
+    //if (MyCharacter)
+    //{
+    //    // 캐릭터 참조가 성공적으로 얻어졌습니다.
+    //}
 }

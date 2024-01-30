@@ -91,10 +91,10 @@ FString APlayerCharacter::GetPlayerMove() const
 	return PlayerStateString;
 }
 
-void APlayerCharacter::UpdateCharacterState(AMyGameNetworkManager* MyCharacterNetworkManager)
+void APlayerCharacter::UpdateCharacterState()
 {
-
 	APlayerCharacter* MyCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 
 	if (MyCharacter) // MyCharacter는 캐릭터에 대한 참조입니다.
 	{
@@ -104,15 +104,25 @@ void APlayerCharacter::UpdateCharacterState(AMyGameNetworkManager* MyCharacterNe
 
 		// 이제 위치, 회전, 속도 값을 전송하는 로직을 구현하세요.
 		MyCharacterNetworkManager->SendData_Movement(Location, Rotation, Velocity);
+
+		// Return the values as a tuple
+		//return std::make_tuple(Location, Rotation, Velocity);
 	}
+	
+	
+	//FVector InvalidVector(-1.f, -1.f, -1.f);
+	//FRotator InvalidRotator(-1.f, -1.f, -1.f);
+
+	// Return the values as a tuple
+	//return std::make_tuple(InvalidVector, InvalidRotator, InvalidVector);
 }
 
-// Called when the game starts or when spawned
+ //Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	// AMyGameNetworkManager 인스턴스를 생성합니다.
-	AMyGameNetworkManager* MyCharacterNetworkManager = NewObject<AMyGameNetworkManager>(this, AMyGameNetworkManager::StaticClass());
+
+	AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 
 	if (MyCharacterNetworkManager)
 	{
@@ -124,23 +134,42 @@ void APlayerCharacter::BeginPlay()
 		if (MyCharacterNetworkManager->ConnectToServer())
 		{
 			// 연결 성공
+			bIsConnected = true;
 			//GetPlayerMove();
-			UpdateCharacterState(MyCharacterNetworkManager);
+			UpdateCharacterState();
+			//CharacterNetworkManager->Shutdown();
 		}
 	}
 	GetPlayerID();
 }
 
-//// Called every frame
-//void APlayerCharacter::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//	//CurrentLocation = GetActorLocation();
-//	//CurrentRotation = GetActorRotation();
-//	//CurrentVelocity = GetVelocity();
-//	// 현재 위치, 회전, 속도를 업데이트합니다.
-//	//GetPlayerMove();
-//}
+// Called every frame
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!bHasRetrievedInstance)
+	{
+		AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
+		bHasRetrievedInstance = true;
+	}
+
+	if (bIsConnected)
+	{
+		UpdateCharacterState();
+	}
+
+	//CurrentLocation = GetActorLocation();
+	//CurrentRotation = GetActorRotation();
+	//CurrentVelocity = GetVelocity();
+	// 현재 위치, 회전, 속도를 업데이트합니다.
+	//GetPlayerMove();
+	//CurrentLocation = GetActorLocation();
+	//CurrentRotation = GetActorRotation();
+	//CurrentVelocity = GetVelocity();
+	// 현재 위치, 회전, 속도를 업데이트합니다.
+	//GetPlayerMove();
+}
 
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

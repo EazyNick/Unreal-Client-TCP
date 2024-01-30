@@ -29,9 +29,15 @@ public:
 	APlayerCharacter();
 
 	UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
-	void UpdateCharacterState(AMyGameNetworkManager* MyCharacterNetworkManager);
+	void UpdateCharacterState();
 
 protected:
+
+	bool bIsConnected = false;
+
+	bool bHasRetrievedInstance = false;
+
+	//AMyGameNetworkManager* MyCharacterNetworkManager = nullptr;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,11 +49,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
 	FString GetPlayerID() const;
 
-
-
 public:	
-	//// Called every frame
-	//virtual void Tick(float DeltaTime) override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

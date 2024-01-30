@@ -3,8 +3,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PlayerCharacter.h"
+//#include "MyStructureFactory.h"
 #include "MyGameNetworkManager.generated.h"
-
+    
 UCLASS()
 class AMyGameNetworkManager : public AActor
 {
@@ -13,6 +14,9 @@ class AMyGameNetworkManager : public AActor
 public:
     // Constructor
     AMyGameNetworkManager();
+
+    static AMyGameNetworkManager* GetInstance(UObject* WorldContextObject);
+    void Shutdown();
 
     void SetServerIP(const FString& NewServerIP) { ServerIP = NewServerIP; }
     void SetServerPort(int32 NewServerPort) { ServerPort = NewServerPort; }
@@ -45,6 +49,9 @@ public:
     UFUNCTION(Category = "Network")
     void UpdateCharacterState();
 
+    //UFUNCTION(Category = "Network")
+    //void SendData_Movement(FCharacterState State);
+
     UFUNCTION(BlueprintCallable, Category = "Network")
     FString ReceiveData(FString& OutReceivedData);
 
@@ -58,6 +65,9 @@ public:
     //FTimerHandle PlayerMoveUpdateHandle;
 
 private:
+    static AMyGameNetworkManager* Instance;
     // Client socket
     FSocket* ClientSocket;
 };
+
+AMyGameNetworkManager* AMyGameNetworkManager::Instance = nullptr;
