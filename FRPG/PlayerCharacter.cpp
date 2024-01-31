@@ -136,7 +136,7 @@ void APlayerCharacter::BeginPlay()
 			// 연결 성공
 			bIsConnected = true;
 			//GetPlayerMove();
-			UpdateCharacterState();
+			//UpdateCharacterState();
 			//CharacterNetworkManager->Shutdown();
 		}
 	}
@@ -150,7 +150,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	if (!bHasRetrievedInstance)
 	{
-		AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
+		//AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 		bHasRetrievedInstance = true;
 	}
 
@@ -178,3 +178,23 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (bIsConnected)
+	{
+		AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
+
+	// Ensure network manager is not null
+
+		// Close the network connection
+		MyCharacterNetworkManager->Shutdown();
+
+		// Optional: Clear the reference to the network manager
+		//MyCharacterNetworkManager = nullptr;
+		bIsConnected = false;
+		bHasRetrievedInstance = false;
+		
+	}
+}

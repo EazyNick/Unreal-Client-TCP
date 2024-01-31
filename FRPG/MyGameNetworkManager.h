@@ -15,6 +15,8 @@ public:
     // Constructor
     AMyGameNetworkManager();
 
+    static FCriticalSection InstanceCriticalSection;
+
     static AMyGameNetworkManager* GetInstance(UObject* WorldContextObject);
     void Shutdown();
 

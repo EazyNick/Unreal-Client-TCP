@@ -10,6 +10,10 @@
 #include "Common/TcpSocketBuilder.h"
 #include "Sockets.h"
 #include "Kismet/GameplayStatics.h"
+#include "HAL/ThreadSafeBool.h"
+#include "HAL/CriticalSection.h"
+
+FCriticalSection AMyGameNetworkManager::InstanceCriticalSection;
 
 AMyGameNetworkManager::AMyGameNetworkManager()
 {
@@ -33,6 +37,8 @@ AMyGameNetworkManager::~AMyGameNetworkManager()
 
 AMyGameNetworkManager* AMyGameNetworkManager::GetInstance(UObject* WorldContextObject)
 {
+    FScopeLock Lock(&InstanceCriticalSection); // Lock the critical section
+
     if (!Instance)
     {
         Instance = NewObject<AMyGameNetworkManager>(WorldContextObject, AMyGameNetworkManager::StaticClass());
