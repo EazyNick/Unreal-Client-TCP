@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
@@ -15,6 +15,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyGameNetworkManager.h"
+#include <Kismet/KismetMathLibrary.h>
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -37,27 +38,10 @@ APlayerCharacter::APlayerCharacter()
 	
 }
 
-//void SomeFunction()
-//{
-//	AMyGameNetworkManager* MyNetworkManager = nullptr;
-//
-//	for (TActorIterator<AMyGameNetworkManager> It(GetWorld()); It; ++It)
-//	{
-//		MyNetworkManager = *It;
-//		break; // Ã¹ ¹øÂ° ÀÎ½ºÅÏ½º¸¦ Ã£À¸¸é ¹İº¹À» Á¾·áÇÕ´Ï´Ù.
-//	}
-//
-//	if (MyNetworkManager)
-//	{
-//		// ÀÌÁ¦ UpdateCharacterState() ÇÔ¼ö¸¦ È£ÃâÇÒ ¼ö ÀÖ½À´Ï´Ù.
-//		MyNetworkManager->UpdateCharacterState();
-//	}
-//}
-
 FString APlayerCharacter::GetPlayerID() const
 {
 
-	//Å¬¶óÀÌ¾ğÆ® °íÀ¯ ½Äº°¹øÈ£ °¡Á®¿À±â
+	//í´ë¼ì´ì–¸íŠ¸ ê³ ìœ  ì‹ë³„ë²ˆí˜¸ ê°€ì ¸ì˜¤ê¸°
 	APlayerState* MyPlayerState = GetPlayerState();
 	if (MyPlayerState)
 	{
@@ -67,26 +51,26 @@ FString APlayerCharacter::GetPlayerID() const
 	}
 	else
 	{
-		// MyPlayerState°¡ nullÀÎ °æ¿ì ´Ù½Ã È£Ãâ
+		// MyPlayerStateê°€ nullì¸ ê²½ìš° ë‹¤ì‹œ í˜¸ì¶œ
 		UE_LOG(LogTemp, Warning, TEXT("MyPlayerState is null"));
 		return "G000";
 	}
 
 }
 
-// Ä³¸¯ÅÍ ¿òÁ÷ÀÓ ¹Ş¾Æ¿À±â
+// ìºë¦­í„° ì›€ì§ì„ ë°›ì•„ì˜¤ê¸°
 FString APlayerCharacter::GetPlayerMove() const
 {
 
-	FVector OutLocation = GetActorLocation();  // ÇöÀç À§Ä¡ °¡Á®¿À±â
-	FRotator OutRotation = GetActorRotation(); // ÇöÀç È¸Àü °¡Á®¿À±â	
-	FVector OutVelocity = GetVelocity();       // ÇöÀç ¼Óµµ °¡Á®¿À±â
+	FVector OutLocation = GetActorLocation();  // í˜„ì¬ ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
+	FRotator OutRotation = GetActorRotation(); // í˜„ì¬ íšŒì „ ê°€ì ¸ì˜¤ê¸°	
+	FVector OutVelocity = GetVelocity();       // í˜„ì¬ ì†ë„ ê°€ì ¸ì˜¤ê¸°
 
 	FString PlayerStateString = FString::Printf(TEXT("Location: %s, Rotation: %s, Velocity: %s"),
 		*OutLocation.ToString(),
 		*OutRotation.ToString(),
 		*OutVelocity.ToString());
-	UE_LOG(LogTemp, Log, TEXT("%s"), *PlayerStateString);
+	//UE_LOG(LogTemp, Log, TEXT("%s"), *PlayerStateString);
 
 	return PlayerStateString;
 }
@@ -96,13 +80,13 @@ void APlayerCharacter::UpdateCharacterState()
 	APlayerCharacter* MyCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 	AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 
-	if (MyCharacter) // MyCharacter´Â Ä³¸¯ÅÍ¿¡ ´ëÇÑ ÂüÁ¶ÀÔ´Ï´Ù.
+	if (MyCharacter) // MyCharacterëŠ” ìºë¦­í„°ì— ëŒ€í•œ ì°¸ì¡°ì…ë‹ˆë‹¤.
 	{
 		FVector Location = MyCharacter->GetActorLocation();
 		FRotator Rotation = MyCharacter->GetActorRotation();
 		FVector Velocity = MyCharacter->GetCharacterMovement()->Velocity;
 
-		// ÀÌÁ¦ À§Ä¡, È¸Àü, ¼Óµµ °ªÀ» Àü¼ÛÇÏ´Â ·ÎÁ÷À» ±¸ÇöÇÏ¼¼¿ä.
+		// ì´ì œ ìœ„ì¹˜, íšŒì „, ì†ë„ ê°’ì„ ì „ì†¡í•˜ëŠ” ë¡œì§ì„ êµ¬í˜„í•˜ì„¸ìš”.
 		MyCharacterNetworkManager->SendData_Movement(Location, Rotation, Velocity);
 
 		// Return the values as a tuple
@@ -122,19 +106,26 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CameraValue = FVector(PlayerCamSpringArm->TargetArmLength, PlayerCamSpringArm->GetDesiredRotation().Pitch, PlayerCamSpringArm->GetDesiredRotation().Yaw);
+	CameraZoomValue = CameraValue - FVector(350, -45, 0);
+	UE_LOG(LogTemp, Log, TEXT("Value = %s"), *CameraValue.ToString());
+
 	AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 
 	if (MyCharacterNetworkManager)
 	{
-		// ¼­¹ö IP¿Í Æ÷Æ®¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-		MyCharacterNetworkManager->SetServerIP(TEXT("127.0.0.1")); // ¿¹½Ã IP
-		MyCharacterNetworkManager->SetServerPort(12332); // ¿¹½Ã Æ÷Æ®
+		// ì„œë²„ IPì™€ í¬íŠ¸ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+		MyCharacterNetworkManager->SetServerIP(TEXT("127.0.0.1")); // ì˜ˆì‹œ IP
+		MyCharacterNetworkManager->SetServerPort(12332); // ì˜ˆì‹œ í¬íŠ¸
 
-		// ¼­¹ö¿¡ ¿¬°áÀ» ½ÃµµÇÕ´Ï´Ù.
+		// ì„œë²„ì— ì—°ê²°ì„ ì‹œë„í•©ë‹ˆë‹¤.
 		if (MyCharacterNetworkManager->ConnectToServer())
 		{
-			// ¿¬°á ¼º°ø
+			// ì—°ê²° ì„±ê³µ
 			bIsConnected = true;
+			UpdateCharacterState();
+			FString Result = MyCharacterNetworkManager->ReceiveData();
+			UE_LOG(LogTemp, Warning, TEXT("Received data: %s"), *Result);
 			//GetPlayerMove();
 			//UpdateCharacterState();
 			//CharacterNetworkManager->Shutdown();
@@ -148,26 +139,41 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bCameraZoom) {
+		CameraSmoothMove();
+	}
+	if (IsDoll)
+	{
+		RC_Move();
+	}
+
+	//AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
+
+	//UpdateCharacterState();
+
+	//MyCharacterNetworkManager->ReceiveData();
+
 	if (!bHasRetrievedInstance)
 	{
-		//AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 		bHasRetrievedInstance = true;
 	}
 
 	if (bIsConnected)
 	{
+		//AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 		UpdateCharacterState();
+		//MyCharacterNetworkManager->ReceiveData();
 	}
 
 	//CurrentLocation = GetActorLocation();
 	//CurrentRotation = GetActorRotation();
 	//CurrentVelocity = GetVelocity();
-	// ÇöÀç À§Ä¡, È¸Àü, ¼Óµµ¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+	// í˜„ì¬ ìœ„ì¹˜, íšŒì „, ì†ë„ë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
 	//GetPlayerMove();
 	//CurrentLocation = GetActorLocation();
 	//CurrentRotation = GetActorRotation();
 	//CurrentVelocity = GetVelocity();
-	// ÇöÀç À§Ä¡, È¸Àü, ¼Óµµ¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+	// í˜„ì¬ ìœ„ì¹˜, íšŒì „, ì†ë„ë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
 	//GetPlayerMove();
 }
 
@@ -175,7 +181,94 @@ void APlayerCharacter::Tick(float DeltaTime)
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	InputComponent->BindAction("CameraZoomIn", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
+	InputComponent->BindAction("CameraZoomOut", IE_Pressed, this, &APlayerCharacter::CameraZoomOut);
 
+}
+
+void APlayerCharacter::CameraZoomIn()
+{
+	//PlayerCamSpringArm->SetWorldRotation(FRotator(CameraZoomValue.Y, CameraZoomValue.Z, 0));
+	//PlayerCamSpringArm->TargetArmLength = CameraZoomValue.X;
+	if (!bCameraZoom)
+	{
+		TargetCameraIndex = 1;
+		if (TargetCameraIndex != CurrentCameraIndex) //ï¿½Ìµï¿½ï¿½ï¿½Å³ Ä«ï¿½Ş¶ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Ş¶ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ Ä«ï¿½Ş¶ï¿½ ï¿½Ìµï¿½
+		{
+			bCameraZoom = true;
+			CameraTimerWeightedValue = 0.0f;
+		}
+
+	}
+}
+
+void APlayerCharacter::CameraZoomOut()
+{
+	//PlayerCamSpringArm->SetWorldRotation(FRotator(CameraValue.Y, CameraValue.Z, 0));
+	//PlayerCamSpringArm->TargetArmLength = CameraValue.X;
+	if (!bCameraZoom)
+	{
+		TargetCameraIndex = 0;
+		if (TargetCameraIndex != CurrentCameraIndex)
+		{
+			bCameraZoom = true;
+			CameraTimerWeightedValue = 0.0f;
+		}
+	}
+}
+
+void APlayerCharacter::CameraSmoothMove()
+{
+	if (CameraTimerWeightedValue < 5.0f)
+	{
+		CameraTimerWeightedValue += 0.1f;
+	}
+	if (TargetCameraIndex) //
+	{
+		CameraTimer += (0.02f / CameraTimerWeightedValue);
+	}
+	else
+	{
+		CameraTimer -= (0.02f / CameraTimerWeightedValue);
+	}
+
+	float SpringArmLength = UKismetMathLibrary::Lerp(CameraValue.X, CameraZoomValue.X, CameraTimer);
+	float RotatorX = UKismetMathLibrary::Lerp(CameraValue.Y, CameraZoomValue.Y, CameraTimer);
+	float RotatorY = UKismetMathLibrary::Lerp(CameraValue.Z, CameraZoomValue.Z, CameraTimer);
+
+	PlayerCamSpringArm->SetWorldRotation(FRotator(RotatorX, RotatorY, 0));
+	PlayerCamSpringArm->TargetArmLength = SpringArmLength;
+
+	if (CameraTimer < 0) //
+	{
+		bCameraZoom = false;
+		CameraTimer = 0.0f;
+		CurrentCameraIndex = 0;
+	}
+	else if (CameraTimer > 1) //
+	{
+		bCameraZoom = false;
+		CameraTimer = 1.0f;
+		CurrentCameraIndex = 1;
+	}
+
+}
+
+void APlayerCharacter::ReceiveCharacterData(FString StringData) //
+{
+	UE_LOG(LogTemp, Log, TEXT("Receive"));
+	UE_LOG(LogTemp, Log, TEXT("Data: %s"), *StringData);
+	TArray<FString> DataArray;
+	StringData.ParseIntoArray(DataArray, TEXT(","));
+	UE_LOG(LogTemp, Log, TEXT("VlcData: %s"), *DataArray[2]);
+	Rc_Position.InitFromString(DataArray[0]);
+	Rc_Rotation.InitFromString(DataArray[1]);
+	Rc_Velocity.InitFromString(DataArray[2]);
+}
+
+void APlayerCharacter::RC_Move()
+{
+	this->AddMovementInput(Rc_Velocity);
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)

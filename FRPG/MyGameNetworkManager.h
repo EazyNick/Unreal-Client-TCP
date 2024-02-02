@@ -55,10 +55,11 @@ public:
     //void SendData_Movement(FCharacterState State);
 
     UFUNCTION(BlueprintCallable, Category = "Network")
-    FString ReceiveData(FString& OutReceivedData);
+    FString ReceiveData();
 
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
     // Destructor
     virtual ~AMyGameNetworkManager();

@@ -18,6 +18,7 @@ FCriticalSection AMyGameNetworkManager::InstanceCriticalSection;
 AMyGameNetworkManager::AMyGameNetworkManager()
 {
     ClientSocket = nullptr;
+    PrimaryActorTick.bCanEverTick = true;
     // Set the timer to call SendData_Movement every 0.1 seconds (or any other suitable interval)
     //if (GetWorld())
     //{
@@ -96,10 +97,10 @@ void AMyGameNetworkManager::SendData_Movement(FVector CurrentLocation1, FRotator
 {
     if (!ClientSocket) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation: %s, Velocity: %s"),
+    /*UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation: %s, Velocity: %s"),
         *CurrentLocation1.ToString(),
         *CurrentRotation1.ToString(),
-        *CurrentVelocity1.ToString());
+        *CurrentVelocity1.ToString());*/
 
     FString PlayerStateString = FString::Printf(TEXT("Location: %s, Rotation: %s, Velocity: %s"),
         *CurrentLocation1.ToString(),
@@ -184,9 +185,12 @@ void AMyGameNetworkManager::UpdateCharacterState()
     }
 }
 
-FString AMyGameNetworkManager::ReceiveData(FString& OutReceivedData)
+FString AMyGameNetworkManager::ReceiveData()
 {
-    if (!ClientSocket) return "No Status";
+    if (!ClientSocket) {
+        UE_LOG(LogTemp, Warning, TEXT("Received data: No Status"));
+        return "No Socket";
+    }
 
     // 수신 버퍼 준비
     TArray<uint8> ReceivedData;
@@ -196,41 +200,33 @@ FString AMyGameNetworkManager::ReceiveData(FString& OutReceivedData)
     {
         ReceivedData.Init(0, FMath::Min(Size, 65507u));
 
-
         int32 Read = 0;
         ClientSocket->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
 
         if (Read > 0) {
             // 수신된 데이터를 FString으로 변환
             FString ReceivedString = FString(ANSI_TO_TCHAR(reinterpret_cast<const char*>(ReceivedData.GetData())));
-            OutReceivedData += ReceivedString;
+            ReceivedString;
             UE_LOG(LogTemp, Warning, TEXT("Received data: %s"), *ReceivedString);
             return ReceivedString;
         }
         else
         {
             UE_LOG(LogTemp, Error, TEXT("Read < 0"));
-            return "No Status";
+            return "No Read Messege";
         }
-    } return "No Status";
+        UE_LOG(LogTemp, Warning, TEXT("Received data: No Status"));
+    } return "No Message";
 
 }
-
-//// Called every frame
-//void APlayerCharacter::Tick(float DeltaTime)
-//{
-//    Super::Tick(DeltaTime);
-//    CurrentLocation = GetActorLocation();
-//    CurrentRotation = GetActorRotation();
-//    CurrentVelocity = GetVelocity();
-//    // 현재 위치, 회전, 속도를 업데이트합니다.
-//    //GetPlayerMove();
-//}
 
 void AMyGameNetworkManager::BeginPlay()
 {
     Super::BeginPlay();
-
+    //ConnectToServer();
+    //FString result = ReceiveData();
+    //SetActorTickEnabled(true);
+    //UE_LOG(LogTemp, Warning, TEXT("Begin NetworkManager"));
     /*FTimerHandle CharacterUpdateTimer;
     GetWorld()->GetTimerManager().SetTimer(CharacterUpdateTimer, this, &AMyGameNetworkManager::UpdateCharacterState, 0.1f, true);
 
@@ -239,4 +235,17 @@ void AMyGameNetworkManager::BeginPlay()
     //{
     //    // 캐릭터 참조가 성공적으로 얻어졌습니다.
     //}
+}
+
+// Called every frame
+void AMyGameNetworkManager::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    FString result = ReceiveData();
+    //UE_LOG(LogTemp, Warning, TEXT("Received data: %s"), *result);
+    //CurrentLocation = GetActorLocation();
+    //CurrentRotation = GetActorRotation();
+    //CurrentVelocity = GetVelocity();
+    // 현재 위치, 회전, 속도를 업데이트합니다.
+    //GetPlayerMove();
 }

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,15 +13,15 @@ class FRPG_API APlayerCharacter : public ACharacter
 
 public:
 
-	// À§Ä¡ Á¤º¸¸¦ ºí·çÇÁ¸°Æ®¿¡¼­ Á¢±Ù °¡´ÉÇÏ°Ô ¸¸µì´Ï´Ù.
+	// ìœ„ì¹˜ ì •ë³´ë¥¼ ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì ‘ê·¼ ê°€ëŠ¥í•˜ê²Œ ë§Œë“­ë‹ˆë‹¤.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	FVector CurrentLocation;
 
-	// È¸Àü Á¤º¸¸¦ ºí·çÇÁ¸°Æ®¿¡¼­ Á¢±Ù °¡´ÉÇÏ°Ô ¸¸µì´Ï´Ù.
+	// íšŒì „ ì •ë³´ë¥¼ ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì ‘ê·¼ ê°€ëŠ¥í•˜ê²Œ ë§Œë“­ë‹ˆë‹¤.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	FRotator CurrentRotation;
 
-	// ¼Óµµ Á¤º¸¸¦ ºí·çÇÁ¸°Æ®¿¡¼­ Á¢±Ù °¡´ÉÇÏ°Ô ¸¸µì´Ï´Ù.
+	// ì†ë„ ì •ë³´ë¥¼ ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì ‘ê·¼ ê°€ëŠ¥í•˜ê²Œ ë§Œë“­ë‹ˆë‹¤.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	FVector CurrentVelocity;
 
@@ -33,6 +33,12 @@ public:
 
 protected:
 
+	float CameraTimer = 0.0f;
+	float CameraTimerWeightedValue = 0.0f;
+	bool bCameraZoom = false; //Zoom
+	bool TargetCameraIndex = 1; //Zoom
+	bool CurrentCameraIndex = 0; //Zoom
+
 	bool bIsConnected = false;
 
 	bool bHasRetrievedInstance = false;
@@ -42,7 +48,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Å¬¶óÀÌ¾ğÆ®ÀÇ ÇöÀç »óÅÂ(À§Ä¡, È¸Àü, ¼Óµµ)¸¦ ¾ò´Â ÇÔ¼ö
+	// í´ë¼ì´ì–¸íŠ¸ì˜ í˜„ì¬ ìƒíƒœ(ìœ„ì¹˜, íšŒì „, ì†ë„)ë¥¼ ì–»ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable, Category = "GetPlayerState")
 	FString GetPlayerMove() const;
 
@@ -58,8 +64,24 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void CameraZoomIn();
+	void CameraZoomOut();
+	void CameraSmoothMove();
+
+	void ReceiveCharacterData(FString StringData);
+	void RC_Move();
+	bool IsDoll = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cam")
 	class UCameraComponent* PlayerCam;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cam")
 	class USpringArmComponent* PlayerCamSpringArm;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cam")
+	FVector CameraZoomValue;
+	FVector CameraValue; 
+
+private:
+	FVector Rc_Position = FVector::ZeroVector;
+	FRotator Rc_Rotation = FRotator::ZeroRotator;
+	FVector Rc_Velocity = FVector::ZeroVector;;
 };
