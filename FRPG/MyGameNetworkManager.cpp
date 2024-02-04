@@ -241,7 +241,7 @@ void AMyGameNetworkManager::BeginPlay()
 void AMyGameNetworkManager::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    FString result = ReceiveData();
+    //FString result = ReceiveData();
     //UE_LOG(LogTemp, Warning, TEXT("Received data: %s"), *result);
     //CurrentLocation = GetActorLocation();
     //CurrentRotation = GetActorRotation();

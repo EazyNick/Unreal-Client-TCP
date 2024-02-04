@@ -13,6 +13,8 @@ class FRPG_API APlayerCharacter : public ACharacter
 
 public:
 
+	FTimerHandle TimerHandle_Update;
+
 	// 위치 정보를 블루프린트에서 접근 가능하게 만듭니다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	FVector CurrentLocation;

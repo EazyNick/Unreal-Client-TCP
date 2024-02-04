@@ -123,9 +123,10 @@ void APlayerCharacter::BeginPlay()
 		{
 			// 연결 성공
 			bIsConnected = true;
-			UpdateCharacterState();
-			FString Result = MyCharacterNetworkManager->ReceiveData();
-			UE_LOG(LogTemp, Warning, TEXT("Received data: %s"), *Result);
+			//UpdateCharacterState();
+			//FString Result = MyCharacterNetworkManager->ReceiveData();
+			//UE_LOG(LogTemp, Warning, TEXT("Received data: %s"), *Result);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_Update, this, &APlayerCharacter::UpdateCharacterState, 1.5f, true);
 			//GetPlayerMove();
 			//UpdateCharacterState();
 			//CharacterNetworkManager->Shutdown();
@@ -139,6 +140,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//int Tickcut = 0;
+
 	if (bCameraZoom) {
 		CameraSmoothMove();
 	}
@@ -147,6 +150,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		RC_Move();
 	}
 
+	//Tickcut += 1;
 	//AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
 
 	//UpdateCharacterState();
@@ -161,7 +165,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	if (bIsConnected)
 	{
 		//AMyGameNetworkManager* MyCharacterNetworkManager = AMyGameNetworkManager::GetInstance(this);
-		UpdateCharacterState();
+		//UpdateCharacterState();
 		//MyCharacterNetworkManager->ReceiveData();
 	}
 
